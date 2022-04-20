@@ -718,14 +718,16 @@ static int mqtt_parse_connect(struct ist parser, struct mqtt_pkt *mpkt)
 	 */
 	/* read protocol_name */
 	parser = mqtt_read_string(parser, &mpkt->data.connect.var_hdr.protocol_name);
-	if (!isttest(parser) || !isteqi(mpkt->data.connect.var_hdr.protocol_name, ist("MQTT")))
+	if (!isttest(parser) || (!isteqi(mpkt->data.connect.var_hdr.protocol_name, ist("MQTT"))
+	    && !isteqi(mpkt->data.connect.var_hdr.protocol_name, ist("MQIsdp"))))
 		goto end;
 
 	/* read protocol_version */
 	parser = mqtt_read_1byte_int(parser, &mpkt->data.connect.var_hdr.protocol_version);
 	if (!isttest(parser))
 		goto end;
-	if (mpkt->data.connect.var_hdr.protocol_version != MQTT_VERSION_3_1_1 &&
+	if (mpkt->data.connect.var_hdr.protocol_version != MQTT_VERSION_3_1 &&
+	    mpkt->data.connect.var_hdr.protocol_version != MQTT_VERSION_3_1_1 &&
 	    mpkt->data.connect.var_hdr.protocol_version != MQTT_VERSION_5_0)
 		goto end;
 
