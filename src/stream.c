@@ -1337,7 +1337,7 @@ static int process_sticking_rules(struct stream *s, struct channel *req, int an_
 			if (!key)
 				continue;
 
-			strncpy(s->sticky_key, key->key, key->key_len);
+			strncpy(s->sticky_key, key->key, (key->key_len < MAX_STICKY_KEY) ? key->key_len : (MAX_STICKY_KEY - 1));
 
 			if (rule->flags & STK_IS_MATCH) {
 				struct stksess *ts;
