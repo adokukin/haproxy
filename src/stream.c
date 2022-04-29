@@ -450,6 +450,7 @@ struct stream *stream_new(struct session *sess, enum obj_type *origin, struct bu
 	s->be  = sess->fe;
 	s->req_cap = NULL;
 	s->res_cap = NULL;
+	memset(s->sticky_key, 0, sizeof(s->sticky_key));
 
 	/* Initialise all the variables contexts even if not used.
 	 * This permits to prune these contexts without errors.
@@ -1335,6 +1336,8 @@ static int process_sticking_rules(struct stream *s, struct channel *req, int an_
 			key = stktable_fetch_key(rule->table.t, px, sess, s, SMP_OPT_DIR_REQ|SMP_OPT_FINAL, rule->expr, NULL);
 			if (!key)
 				continue;
+
+			strncpy(s->sticky_key, key->key, key->key_len);
 
 			if (rule->flags & STK_IS_MATCH) {
 				struct stksess *ts;
@@ -3597,12 +3600,13 @@ static int cli_io_handler_dump_sess(struct appctx *appctx)
 			case AF_INET:
 			case AF_INET6:
 				chunk_appendf(&trash,
-					     " src=%s:%d fe=%s be=%s srv=%s",
+					     " src=%s:%d fe=%s be=%s srv=%s key='%s'",
 					     pn,
 					     get_host_port(conn->src),
 					     strm_fe(curr_strm)->id,
 					     (curr_strm->be->cap & PR_CAP_BE) ? curr_strm->be->id : "<NONE>",
-					     objt_server(curr_strm->target) ? __objt_server(curr_strm->target)->id : "<none>"
+					     objt_server(curr_strm->target) ? __objt_server(curr_strm->target)->id : "<none>",
+					     curr_strm->sticky_key
 					     );
 				break;
 			case AF_UNIX:

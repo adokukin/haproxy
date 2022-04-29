@@ -88,6 +88,8 @@
 #define PCLI_F_PROMPT          0x4
 #define PCLI_F_PAYLOAD         0x8
 
+#define MAX_STICKY_KEY	16
+
 struct hlua;
 struct proxy;
 struct pendconn;
@@ -124,6 +126,7 @@ struct stream {
 	struct channel res;             /* response channel */
 
 	struct proxy *be;               /* the proxy this stream depends on for the server side */
+	char sticky_key[MAX_STICKY_KEY]; /* sticky key which is used to choose backend server ATTENTION! works only in my setup, but costs memory always */
 
 	struct session *sess;           /* the session this stream is attached to */
 
